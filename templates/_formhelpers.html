@@ -1,0 +1,20 @@
+{% macro render_breadcrumb(modulo) %}
+<nav style="--bs-breadcrumb-divider: '>'; padding-top: 30px;" aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/">Home</a></li>
+        <li class="breadcrumb-item active" aria-current="page"><img src="{{url_for('static', filename='img/logo.png')}}" alt="Avatar Logo" style="width:25px;"
+            class="rounded-pill">{{modulo}}</li>
+    </ol>
+</nav>
+{% endmacro %}
+
+{% macro render_field(classParent, fieldGiven, classField="") %}
+<!-- render_field("col-4", login_form.username, "") -->
+<div class="{{classParent}}">
+  {{ fieldGiven.label }}
+  {{ fieldGiven(class="form-control " + classField) }}
+  <div class="invalid-feedback alert alert-danger">
+    {{ fieldGiven.description }}
+  </div>
+</div>
+{% endmacro %}

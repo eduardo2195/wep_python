@@ -1,0 +1,259 @@
+{% extends 'base.html' %}
+
+{% from "_formhelpers.html" import render_breadcrumb, render_field %}
+
+{% block styles %}
+{% endblock %}
+{% block content %}
+
+
+{{ render_breadcrumb("Personas") }}
+<div class="container" style="padding-top: 30px;">
+
+    <h1>Personas</h1>
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#myModal">
+        Open modal
+    </button>
+    <br>
+    <table id="myTable" class="table table-bordered table-sm">
+        <thead>
+            <tr>
+                <th>Nombre completo</th>
+                <th>Fecha de nacimiento</th>
+                <th>Sexo</th>
+                <th>Capacidad diferente</th>
+                <th>Observaciones</th>
+                <th></th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+
+        </tbody>
+    </table>
+    <!-- The Modal -->
+    <div class="modal" id="myModal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+
+                <!-- Modal Header -->
+                <div class="modal-header">
+                    <h4 class="modal-title">Modal Heading</h4>
+                    <button onclick="fnNuevo()" type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <!-- Modal body -->
+                <div class="modal-body">
+                    <form id="myForm">
+                        <div class="row">
+                            {{ obj_form.csrf_token }}
+                            {{ obj_form.id }}
+                            {{ render_field("col-md-12", obj_form.nombrecompleto) }}
+                            {{ render_field ("col-md-6", obj_form.fechanacimiento) }}
+                            {{ render_field ("col-md-6", obj_form.sexo) }}
+                            {{ render_field ("col-md-6", obj_form.capacidaddiferente) }}
+                            {{ render_field ("col-md-12", obj_form.observaciones) }}
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Modal footer -->
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" title="Guardar" onclick="fnGuardar()">
+                        Guardar
+                    </button>
+                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <script>
+
+    </script>
+
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function isFormValid(formName) {
+        $(`#${formName}`).addClass("was-validated");
+        if (!$(`#${formName}`)[0].checkValidity()) {
+            $(`#${formName} .invalid-feedback`).each(function () {
+                if ($(this)[0].offsetParent) {
+                    return false;
+                }
+            });
+            return false;
+        }
+        return true;
+    }
+
+    function fnGuardar() {
+        // Validar que los datos capturados sean correctos
+        var formData = new FormData(document.getElementById('myForm'));
+        if (!isFormValid('myForm')) {
+            return;
+        }
+        $.ajax({
+            url: "/personas/api/add",
+            type: 'POST', data: formData, processData: false, contentType: false,
+            success: function (result) {
+                try {
+                    if (result.success == 'ok') {
+                        alert("El registro se guardó exitosamente");
+                        $('#myModal').modal('hide');
+                        //$(#myTable).DataTable().ajax.reload();
+                    }
+                    if (result.error) {
+                        alert(result.error);
+                    }
+                } catch (e) {
+                    console.log('Response:', result);
+                }
+            },
+            error: function (xhr) {
+                alert("An error occured: " + xhr.status + " " + xhr.statusText);
+            }
+        });
+    }
+
+    function fnLoadDatatable() {
+        // https://datatables.net/reference/option/columns.data
+        // https://editor.datatables.net/examples/simple/inTableControls.html
+        var objTablaEjemplar = $('#myTable').DataTable({
+            // new DataTable('#myTable', {
+            ajax: '/personas/api/get',
+            columnDefs: [
+                {
+                    target: 0, data: 'nombrecompleto'
+                },
+                {
+                    target: 1, data: 'fechanacimiento',
+                    render: function (data) {
+                        // Convertir la fecha a un objeto Date
+                        var fecha = new Date(data);
+                        // Formatear la fecha como año-mes-dia
+                        return ('0' + fecha.getDate()).slice(-2) + '-' + ('0' + (fecha.getMonth() + 1)).slice(-2) + '-' + fecha.getFullYear();
+                    }
+                },
+                {
+                    target: 2, data: 'sexo'
+                },
+                {
+                    target: 3, data: 'capacidaddiferente'
+                },
+                {
+                    target: 4, data: 'observaciones'
+                },
+                {
+                    target: 5, data: null,
+                    render: (data) => {
+                        let editButton = document.createElement('button');
+                        editButton.classList.add('btn', 'btn-secondary');
+                        editButton.dataset.bsToggle = 'modal';
+                        editButton.dataset.bsTarget = '#myModal';
+                        editButton.onclick = () => fnEditar(data.id);
+                        editButton.textContent = 'Editar';
+                        return editButton;
+                    }
+                },
+                {
+                    target: 6, data: null,
+                    className: 'dt-center editor-delete',
+                    render: (data) => {
+                        let deleteButton = document.createElement('button');
+                        deleteButton.classList.add('btn', 'btn-danger');
+                        deleteButton.onclick = () => fnBorrar(data.id);
+                        deleteButton.textContent = 'Borrar';
+                        return deleteButton;
+                    }
+                }
+            ]
+        });
+    }
+    
+
+    $(document).ready(function () {
+        fnLoadDatatable();
+    });
+
+    function fnNuevo() {
+        $('#myForm').trigger('reset');
+
+    }
+
+    function fnEditar(id) {
+        // precargar las opciones del combo
+        // await fnLoadCombo("estadocombo.php", "estado_id");
+        // Obtener los datos del registro del servidor dado según el id
+        $.ajax({
+            url: "/personas/api/get?id=" + id,
+            type: 'GET',
+            data: '',
+            processData: false,
+            contentType: false,
+            success: function (result) {
+                try {
+                    var jsonResponse = result; //JSON.parse(result);
+                    // console.log(jsonResponse);
+                    $("#id").val(jsonResponse.data[0].id);
+                    $("#nombrecompleto").val(jsonResponse.data[0].nombrecompleto);
+                    // formatear la fecha en año mes y dia
+                    var fechanac = new Date(jsonResponse.data[0].fechanacimiento);
+                    fechanac = fechanac.getFullYear() + "-" + ("0" + (fechanac.getMonth() + 1)).slice(-2) + "-" + ("0" + fechanac.getDate()).slice(-2);
+                    $("#fechanacimiento").val(fechanac);
+                    $("#sexo").val(jsonResponse.data[0].sexo);
+                    $("#capacidaddiferente").val(jsonResponse.data[0].capacidaddiferente);
+                    $("#observaciones").val(jsonResponse.data[0].observaciones);
+
+                    if (jsonResponse.error) {
+                        alert(jsonResponse.error);
+                    }
+                } catch (e) {
+                    //console.error('Could not parse JSON:', e);
+                    console.log('Response:', result);
+                }
+            },
+            error: function (xhr) {
+                alert("An error occured: " + xhr.status + " " + xhr.statusText);
+            }
+        });
+    }
+
+    function fnBorrar(id) {
+        var formData = new FormData();
+        formData.append('id', id);
+        formData.append('csrf_token', $("#csrf_token").val());
+        console.log(formData);
+        $.ajax({
+            url: "/personas/api/delete",
+            type: 'DELETE',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (result) {
+                try {
+                    var jsonResponse = result; //JSON.parse(result);
+                    console.log(jsonResponse);
+                    if (jsonResponse.data) {
+                        alert("El registro ha sido borrado");
+                        $('#myTable').DataTable().ajax.reload();
+                    }
+                    if (jsonResponse.error) {
+                        alert(jsonResponse.error);
+                    }
+                } catch (e) {
+                    //console.error('Could not parse JSON:', e);
+                    console.log('Response:', result);
+                }
+            },
+            error: function (xhr) {
+                alert("An error occured: " + xhr.status + " " + xhr.statusText);
+            }
+        });
+    }
+</script>
+{% endblock %}

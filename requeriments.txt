@@ -1,0 +1,18 @@
+flask 
+python-dotenv     # environment
+flask_sqlalchemy  # BD
+sqlalchemy_utils  # BD
+pymysql           # BD
+flask-wtf         # Forms
+WTForms           # Forms
+passlib[bcrypt]   # encriptación
+cryptography      # encriptación y ssl
+
+flask-jwt-extended
+flask-login
+email_validator
+fpdf2
+
+pandas           
+unidecode        
+openpyxl          

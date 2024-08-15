@@ -1,0 +1,22 @@
+version: '3.8'  # Use a recent version for compatibility
+
+services:
+  db:
+    image: mariadb:latest  # Use the latest MariaDB image
+    container_name: web_python  # Give your database container a name
+    restart: always  # Ensure the database restarts automatically if it fails
+    environment:
+      - MYSQL_ROOT_PASSWORD=${DATABASE_ROOT_PWD}
+      - MYSQL_DATABASE=${DATABASE_NAME}
+      - MYSQL_USER=${DATABASE_USER}
+      - MYSQL_PASSWORD=${DATABASE_USER_PWD}
+    ports:
+      - "3772:3306"  # Map the database port to your host machine
+    volumes:
+      - db_data:/var/lib/mysql  # Mount a volume to persist data
+  
+  # Add your application service here (e.g., your Flask app)
+  # ...
+
+volumes:
+  db_data:  # Define the volume for persistent data

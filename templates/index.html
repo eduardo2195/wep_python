@@ -1,0 +1,41 @@
+
+{% extends "base.html" %}
+{% block styles %}
+{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-sm-6" style="padding-top: 50px;">
+        <div class="card" onclick="window.location.href='/personas'">
+            <div class="card-body text-center">
+                <img class="mx-auto d-block" width="100px" height="100px"
+                    src="{{url_for('static', filename='img/logo.png')}}" alt="Card image">
+                <h4 class="card-title">Modulo: Personas</h4>
+                <p class="card-text">Registro y actualizacion de personas.</p>
+                <!-- <a href="#" class="btn btn-primary">See Profile</a> -->
+            </div>
+        </div>
+
+
+    </div>
+    <div class="col-sm-6" style="padding-top: 50px;">
+        <div class="card" onclick="window.location.href='/productos'">
+            <div class="card-body text-center">
+                <img class="mx-auto d-block" width="100px" height="100px"
+                    src="{{url_for('static', filename='img/products.jpg')}}" alt="Card image">
+                <h4 class="card-title">Modulo: Productos</h4>
+                <p class="card-text">Registro y actualizacion de productos.</p>
+                <!-- <a href="#" class="btn btn-primary">See Profile</a> -->
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% endblock %}
+
+
+
+
+
+
